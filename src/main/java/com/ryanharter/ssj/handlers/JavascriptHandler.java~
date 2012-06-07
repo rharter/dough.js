@@ -2,11 +2,13 @@ package com.ryanharter.ssj.handlers;
 
 import java.io.*;
 
+import javax.script.Invocable;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.Scriptable;
 
 import org.eclipse.jetty.server.Request;
@@ -26,31 +28,40 @@ public class JavascriptHandler extends AbstractHandler
 		       HttpServletResponse response)
 	throws IOException, ServletException
     {
-	response.setContentType("text/plain;charset=utf-8");
-        response.setStatus(HttpServletResponse.SC_OK);
-        baseRequest.setHandled(true);
+    	// Stupid code to ignore the favicon request
+    	if (target.equals("/favicon.ico")) {
+    		return;
+    	}
 
-	response.getWriter().println("target: " + target);
+		// Build the path to the target script
+		String scriptPath = directory.getAbsolutePath() +
 
-	// Build the path to the target script
-	String scriptPath = directory.getAbsolutePath() +
-	    File.pathSeparator + target.replace("/", File.pathSeparator);
+		    target.replace("/", File.separator);
+		System.out.println("looking for script: " + scriptPath);
 
-	System.out.println("looking for script: " + scriptPath);
+		File javascript = new File(scriptPath);
 
-	Context cx = Context.enter();
+		if (!javascript.exists()) {
+			System.out.println("Javascript file doesn't exist at path: " + scriptPath);
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
 
-	try {
-	    Scriptable scope = cx.initStandardObjects();
+		Context cx = Context.enter();
 
-	    String script = "var s = 'Hello, Rhino!'; s";
-	    
-	    Object object = cx.evaluateString(scope, script, "TestScript", 1, null);
-	    response.getWriter().println("Object: " + object);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	} finally {
-	    Context.exit();
-	}
+		try {
+		    Scriptable scope = cx.initStandardObjects();
+
+		    FileInputStream fis = new FileInputStream(javascript);
+		    InputStreamReader reader = new InputStreamReader(fis);
+
+		    Object result = cx.evaluateReader(scope, reader, target, 1, null);
+ 
+		    response.getWriter().println(result);
+		} catch (Exception e) {
+		    e.printStackTrace();
+		} finally {
+		    Context.exit();
+		}
     }
 }

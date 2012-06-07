@@ -14,13 +14,12 @@ public class SSJServer
     public static void main(String[] args) throws Exception
     {
 	String homePath = System.getenv(HOME_KEY);
+	if (homePath == null) {
+            System.out.println("No home path found, set " + HOME_KEY + " environment variable to script directory.");
+            System.exit(1);
+        }
+	
 	File home = new File(homePath);
-
-	if (home == null) {
-	    System.out.println("No home path found, set " + HOME_KEY + " environment variable to script directory.");
-	    System.exit(1);
-	}
-
 	Server server = new Server(8080);
 	server.setHandler(new JavascriptHandler(home));
 

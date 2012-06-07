@@ -18,7 +18,8 @@ public class JavascriptHandler extends AbstractHandler
 {
     public File directory;
 
-    public JavascriptHandler(File directory) {
+    public JavascriptHandler(File directory)
+    {
 	super();
 	this.directory = directory;
     }
@@ -33,35 +34,33 @@ public class JavascriptHandler extends AbstractHandler
     		return;
     	}
 
-		// Build the path to the target script
-		String scriptPath = directory.getAbsolutePath() +
-
-		    target.replace("/", File.separator);
-		System.out.println("looking for script: " + scriptPath);
-
-		File javascript = new File(scriptPath);
-
-		if (!javascript.exists()) {
-			System.out.println("Javascript file doesn't exist at path: " + scriptPath);
-			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-			return;
-		}
-
-		Context cx = Context.enter();
-
-		try {
-		    Scriptable scope = cx.initStandardObjects();
-
-		    FileInputStream fis = new FileInputStream(javascript);
-		    InputStreamReader reader = new InputStreamReader(fis);
-
-		    Object result = cx.evaluateReader(scope, reader, target, 1, null);
- 
-		    response.getWriter().println(result);
-		} catch (Exception e) {
-		    e.printStackTrace();
-		} finally {
-		    Context.exit();
-		}
+	// Build the path to the target script
+	String scriptPath = directory.getAbsolutePath() + target.replace("/", File.separator);
+	System.out.println("looking for script: " + scriptPath);
+	
+	File javascript = new File(scriptPath);
+	
+	if (!javascript.exists()) {
+	    System.out.println("Javascript file doesn't exist at path: " + scriptPath);
+	    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+	    return;
+	}
+	
+	Context cx = Context.enter();
+	
+	try {
+	    Scriptable scope = cx.initStandardObjects();
+	    
+	    FileInputStream fis = new FileInputStream(javascript);
+	    InputStreamReader reader = new InputStreamReader(fis);
+	    
+	    Object result = cx.evaluateReader(scope, reader, target, 1, null);
+	    
+	    response.getWriter().println(result);
+	} catch (Exception e) {
+	    e.printStackTrace();
+	} finally {
+	    Context.exit();
+	}
     }
 }
