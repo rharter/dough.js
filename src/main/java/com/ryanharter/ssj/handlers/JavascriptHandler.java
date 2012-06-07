@@ -2,11 +2,13 @@ package com.ryanharter.ssj.handlers;
 
 import java.io.*;
 
+import javax.script.Invocable;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.Scriptable;
 
 import org.eclipse.jetty.server.Request;
@@ -33,6 +35,7 @@ public class JavascriptHandler extends AbstractHandler
 
 		// Build the path to the target script
 		String scriptPath = directory.getAbsolutePath() +
+
 		    target.replace("/", File.separator);
 		System.out.println("looking for script: " + scriptPath);
 
@@ -44,18 +47,17 @@ public class JavascriptHandler extends AbstractHandler
 			return;
 		}
 
-		Context cx = ContextFactory.enter();
+		Context cx = Context.enter();
 
 		try {
 		    Scriptable scope = cx.initStandardObjects();
 
-			FileInputStream fis = new FileInputStream(javascript);
-			InputStreamReader reader = new InputStreamReader(fis);
+		    FileInputStream fis = new FileInputStream(javascript);
+		    InputStreamReader reader = new InputStreamReader(fis);
 
-		    cx.evaluateReader(scope, reader, target, 1, null);
+		    Object result = cx.evaluateReader(scope, reader, target, 1, null);
  
-		    Invocable inv = (Invocable)
-		    response.getWriter().println("Object: " + object);
+		    response.getWriter().println(result);
 		} catch (Exception e) {
 		    e.printStackTrace();
 		} finally {

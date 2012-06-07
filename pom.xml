@@ -4,15 +4,15 @@
  
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ryanharter</groupId>
-  <artifactId>hello-world</artifactId>
+  <artifactId>bighub-fs</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>Jetty HelloWorld</name>
+  <name>BigHub - Filesystem</name>
  
   <properties>
     <jettyVersion>7.2.0.v20101020</jettyVersion>
   </properties>
- 
+
   <dependencies>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -44,6 +44,19 @@
         <configuration>
           <mainClass>com.ryanharter.ssj.SSJServer</mainClass>
         </configuration>
+      </plugin>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-jar-plugin</artifactId>
+	  <configuration>
+	    <archive>
+	      <manifest>
+		<addClasspath>true</addClasspath>
+		<classpathPrefix>lib/</classpathPrefix>
+		<mainClass>com.ryanharter.ssj.SSJServer</mainClass>
+	      </manifest>
+	    </archive>
+	  </configuration>
       </plugin>
     </plugins>
   </build>
