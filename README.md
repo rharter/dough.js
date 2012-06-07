@@ -8,15 +8,17 @@
 
 # Project Directory Structure #
 
-* ROOT
-  * app
-    * Javascript files in the directory structure of your choosing (will be reflected in URLs)
-  * public
-    * Static files to be served directly to the client
-  * lib
-    * plugins
-    * connectors
-    * resources
+<pre>
+- ROOT
+  +- app
+    +- Javascript files in the directory structure of your choosing (will be reflected in URLs)
+  +- public
+    +- Static files to be served directly to the client
+  +- lib
+    +- plugins
+    +- connectors
+    +- resources
+</pre>
 
 # File Types
 
