@@ -2,14 +2,15 @@ package com.ryanharter.ssj.handlers;
 
 import java.io.*;
 
-import javax.script.Invocable;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
 
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -44,6 +45,8 @@ public class JavascriptHandler extends AbstractHandler
 	    System.out.println("Javascript file doesn't exist at path: " + scriptPath);
 	    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 	    return;
+	} else {
+	    baseRequest.setHandled(true);
 	}
 	
 	Context cx = Context.enter();
@@ -51,11 +54,24 @@ public class JavascriptHandler extends AbstractHandler
 	try {
 	    Scriptable scope = cx.initStandardObjects();
 	    
+	    // Set up the environment
+	    String sys = "var sys = {" +
+		"'env': 'development'" +
+		"}";
+	    cx.evaluateString(scope, sys, "sys", 1, null);
+
+	    String req = "var request = {" +
+		"'method': '" + request.getMethod() + "'" +
+		"}";
+	    cx.evaluateString(scope, req, "req", 1, null);
+
 	    FileInputStream fis = new FileInputStream(javascript);
 	    InputStreamReader reader = new InputStreamReader(fis);
 	    
-	    Object result = cx.evaluateReader(scope, reader, target, 1, null);
+	    Script script = cx.compileReader(scope, reader, javascript.getName(), 1, null);
 	    
+	    Object result = script.exec(cx, scope);
+
 	    response.getWriter().println(result);
 	} catch (Exception e) {
 	    e.printStackTrace();
