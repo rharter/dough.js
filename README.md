@@ -1,12 +1,22 @@
-# Server Side Javascript Book Server #
+# File based BigHub Concept
 
-* Server
-* JavascriptHandler
-  * Find resource at path
-  * Execute javascript
-  * Return result
+This project is a proof of concept for a BigHub server entirely based on file system based projects (so no database necessary) and using an embedded server.
 
-# Project Directory Structure #
+* Static Resources
+  * Static resources live in the public directory of the project and will be served first.
+  * File names are based on path relative to public directory (i.e. /public/index.html will be resolved for /index.html, etc)
+* Javascript Resources
+  * Javascript files will be executed and the results passed to the client allowing for dynamic content.
+  * File names are based on path relative to app directory (i.e. /app/hello.js will be resolved for /hello.js, etc)
+* Plugins
+  * Plugins allow extensibility by including jar files in the javascript environment.
+  * All jar files in the /lib/plugins directory will be loaded into the javascript scope and can be accessed in standard ways.
+* Resources
+  * Resources are javascript files that will not be exposed directly to clients.
+  * They can be included in javascript resources.
+  * They enable the use and sharing of libraries of generic, reusable code.
+
+# Project Directory Structure
 
 <pre>
 - ROOT
