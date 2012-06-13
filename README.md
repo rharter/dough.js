@@ -16,7 +16,6 @@
     +- Static files to be served directly to the client
   +- lib
     +- plugins
-    +- connectors
     +- resources
 </pre>
 
@@ -26,9 +25,9 @@
 
 Plugins are jar files that will be loaded at boot time and can be utilized from the javascripts. You can include any standard jar files in here and access them from javascript as you would any other class.
 
-## Connectors
+### Connectors
 
-Connectors are a special type of javascript that defines a connector to an external system. These can connect to things like databases, web service providers, or file shares. Often times connectors will use plugins to bridge the gap from the java world and will serve as a convenient, thin, javascript wrapper.
+Connectors are a special type of plugin that defines a connector to an external system. These can connect to things like databases, web service providers, or file shares. Often times connectors will use plugins to bridge the gap from the java world and will serve as a convenient, thin, javascript wrapper.
 
 ## Resources
 
