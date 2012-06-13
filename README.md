@@ -27,6 +27,8 @@ This project is a proof of concept for a BigHub server entirely based on file sy
   +- lib
     +- plugins
     +- resources
+  +- config
+    +- config.js
 </pre>
 
 # File Types
