@@ -6,6 +6,7 @@ import java.util.Properties;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
@@ -16,7 +17,7 @@ public class Main
 {
     private final int port;
     private final String secret;
-    private final String baseDir;
+    private final Project project;
 
     public static void main(String... args) throws Exception
     {
@@ -43,8 +44,10 @@ public class Main
 
     public Main(Properties props) {
 	this.port = Integer.parseInt(props.getProperty("port", "8080"));
-	this.baseDir = props.getProperty("baseDir", ".");
 	this.secret = props.getProperty("secret", "eb27fb2e61ed603363461b3b4e37e0a0");
+
+	String baseDir = props.getProperty("baseDir", ".");
+	this.project = new Project(baseDir);
     }
 
     private static void printUsage() {
@@ -78,13 +81,40 @@ public class Main
 
 	    // Add the handlers
 	    HandlerList handlers = new HandlerList();
-	    handlers.addHandler(new JavascriptHandler(new File(baseDir)));
+
+	    ResourceHandler publicHandler = new ResourceHandler();
+	    publicHandler.setResourceBase(project.getPublicPath());
+	    handlers.addHandler(publicHandler);
+	    
+	    JavascriptHandler appHandler = new JavascriptHandler(new File(project.getAppPath()));
+	    handlers.addHandler(appHandler);
+
 	    srv.setHandler(handlers);
 
 	    srv.start();
 	    srv.join();
 	} catch (Exception e) {
 	    e.printStackTrace();
+	}
+    }
+
+    public class Project {
+	private final String SEP = File.separator;
+	private final String PUBLIC_PATH = SEP + "public" + SEP;
+	private final String APP_PATH = SEP + "app" + SEP;
+
+	private String base;
+
+	public Project(String baseDir) {
+	    base = baseDir;
+	}
+	
+	public String getPublicPath() {
+	    return base + PUBLIC_PATH;
+	}
+
+	public String getAppPath() {
+	    return base + APP_PATH;
 	}
     }
 }
