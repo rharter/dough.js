@@ -45,4 +45,19 @@ Connectors are a special type of plugin that defines a connector to an external 
 
 Resources are javascript files that don't get served to web clients, but can be included in other scripts. They are used to implement libraries. They return an object that can be utilized in other scripts for various purposes.
 
-Resources can be namespaced using sub-directories and will be accessed using the path to the file starting in the lib directory.  e.g. to load a mysql library: var mysql = load('mysql-lib/mysql', {'param':'value'});
+Resources are implemented to follow the [CommonJS 1.1 Spec](http://wiki.commonjs.org/wiki/Modules/1.1). They are simply javascript files that live in lib/resources and can be included in other resources.
+
+lib/resources/mylib.js
+
+	// Export a variable                                                                                
+	exports.PI = 3.14;
+	
+	// export a function                                                                                
+	exports.print = function(value) {
+	    return 'print: ' + value;
+	}
+
+app/anything.js
+
+	var mylibrary = require('my-library');
+	return mylibrary.print(mylibrary.PI);
