@@ -11,7 +11,7 @@ import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import com.bighub.server.handlers.JavascriptHandler;
-
+import com.bighub.project.Project;
 
 public class Main
 {
@@ -86,7 +86,7 @@ public class Main
 	    publicHandler.setResourceBase(project.getPublicPath());
 	    handlers.addHandler(publicHandler);
 	    
-	    JavascriptHandler appHandler = new JavascriptHandler(new File(project.getAppPath()));
+	    JavascriptHandler appHandler = new JavascriptHandler(project);
 	    handlers.addHandler(appHandler);
 
 	    srv.setHandler(handlers);
@@ -98,23 +98,7 @@ public class Main
 	}
     }
 
-    public class Project {
-	private final String SEP = File.separator;
-	private final String PUBLIC_PATH = SEP + "public" + SEP;
-	private final String APP_PATH = SEP + "app" + SEP;
-
-	private String base;
-
-	public Project(String baseDir) {
-	    base = baseDir;
-	}
+    private void loadPlugins() {
 	
-	public String getPublicPath() {
-	    return base + PUBLIC_PATH;
-	}
-
-	public String getAppPath() {
-	    return base + APP_PATH;
-	}
     }
 }

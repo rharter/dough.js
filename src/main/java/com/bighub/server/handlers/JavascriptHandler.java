@@ -1,11 +1,14 @@
 package com.bighub.server.handlers;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.FileUtils;
 
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
@@ -15,18 +18,26 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.commonjs.module.ModuleScriptProvider;
+import org.mozilla.javascript.commonjs.module.Require;
+import org.mozilla.javascript.commonjs.module.RequireBuilder;
+import org.mozilla.javascript.commonjs.module.provider.ModuleSourceProvider;
+import org.mozilla.javascript.commonjs.module.provider.SoftCachingModuleScriptProvider;
+import org.mozilla.javascript.commonjs.module.provider.UrlModuleSourceProvider;
 
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
+import com.bighub.project.Project;
+
 public class JavascriptHandler extends AbstractHandler
 {
-    public File directory;
-
-    public JavascriptHandler(File directory)
+    private Project project;
+    
+    public JavascriptHandler(Project project)
     {
 	super();
-	this.directory = directory;
+	this.project = project;
     }
 
     public void handle(String target, Request baseRequest,
@@ -40,7 +51,7 @@ public class JavascriptHandler extends AbstractHandler
     	}
 
 	// Build the path to the target script
-	String scriptPath = directory.getAbsolutePath() + target.replace("/", File.separator);
+	String scriptPath = project.getAppPath() + target.replace("/", File.separator);
 	System.out.println("looking for script: " + scriptPath);
 	
 	File javascript = new File(scriptPath);
@@ -58,17 +69,35 @@ public class JavascriptHandler extends AbstractHandler
 	    Scriptable scope = cx.initStandardObjects();
 	    
 	    // Set up the environment
-	    JSONObject sys = new JSONObject();
-	    sys.put("env", "development");
-	    cx.evaluateString(scope, "var sys = " + sys.toJSONString() + ";", "sys", 1, null);
+	    String env = "development";
+	    ScriptableObject.putProperty(scope, "env", env);
 
 	    // Pass the request to the javascript environment
 	    String req = "var request = " + convertRequestToJs(request) + ";";
 	    cx.evaluateString(scope, req, "req", 1, null);
 
+	    // Set up require
+	    File resourceDir = project.getResourceDir();
+	    Iterator<File> resources = FileUtils.iterateFiles(resourceDir, new String[]{ "js" }, true);
+	    List<URI> resourceUris = new ArrayList<URI>();
+	    while (resources.hasNext()) {
+		resourceUris.add(resources.next().toURI());
+	    }
+	    ModuleSourceProvider sourceProvider = new UrlModuleSourceProvider(resourceUris, null);
+	    ModuleScriptProvider scriptProvider = new SoftCachingModuleScriptProvider(sourceProvider);
+
+	    RequireBuilder builder = new RequireBuilder();
+	    builder.setSandboxed(true);
+	    builder.setModuleScriptProvider(scriptProvider);
+
+	    Require require = builder.createRequire(cx, scope);
+	    require.install(scope);
+	    
+	    ScriptableObject.putProperty(scope, "project", project);
+	    
 	    FileInputStream fis = new FileInputStream(javascript);
 	    InputStreamReader reader = new InputStreamReader(fis);
-	    
+
 	    Script script = cx.compileReader(scope, reader, javascript.getName(), 1, null);
 	    
 	    Object result = script.exec(cx, scope);
