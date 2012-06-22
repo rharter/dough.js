@@ -1,0 +1,85 @@
+* Scripts
+
+** Namespaces
+
+By convention, controller files are namespaced accordingly using dot
+notation.  Namespaces are structured as
+<project>.<controller>.<action> where <project> is the name of the
+project that this controller is a part of, <controller> is the type of
+controller this is, usually a type of object, and <action> is the name
+of the function.
+
+#+begin_src javascript
+  namespace('tutorial.users');
+  
+  tutorial.users.list = function (request) {
+      // List code goes here...
+  }
+  
+  tutorial.users.show = function (request) {
+      // Show code goes here...
+  }
+#+end_src
+
+The names in the namespace can be arbitrary, but you should choose
+discriptive names to help you in routing.
+
+* Routing
+
+Routes define javascript handlers for incoming requests.  Once a route
+is registered, requests matching that route will be forwarded to the
+registered function.  Keep in mind that the order in which a route is
+registered is important, as the first matched route will handle the
+incoming request.
+
+** Registering Routes
+
+Routes are registered using the <pre>registeredRoute</pre> function.
+
+#+begin_src javascript
+  // register_route(pattern, function);
+  
+  register_route('/users', tutorial.users.list);
+  register_route('/user/:id', tutorial.users.show);
+#+end_src
+
+** Other Registration Functions
+
+Javascript resources and plugins can register other router functions
+to extend the capabilities of the router.
+
+#+begin_src javascript
+  // Example extentions
+  
+  register_oath_route('/admin', tutorial.admin.index, extra, params);
+  register_basic_auth_route('/insecure', tutorial.insecure.index, domain, auth_function);
+#+end_src
+
+* Templating
+
+The framework will use the [[https://github.com/janl/mustache.js][Mustache.js Framework]] to render html (or
+other format) templates by convention.
+
+** Rendering templates
+
+The Mustache renderer will be wrapped as it will not only need to
+format the content of the response, but it will also need to set the return code on
+the response.
+
+Templates can be rendered by the global function 'render_template'
+which will find the appropriate view template and render it into the
+response object accordingly, returning the completed response object.
+
+#+begin_src javascript
+  require('model/user');
+  
+  tutorial.users.show = function (request) {
+      var response = new Response();
+      var user = tutorial.model.user.find_by_id(request.params.id);
+  
+      return render_template(response, 'show_user.mustache', user);
+  }
+  
+#+end_src
+
+* Configuration

@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>spec</title>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
+<meta name="title" content="spec"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2012-06-22 16:07:25 CDT"/>
+<meta name="author" content="Ryan Harter"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  div.inlinetask {
+    padding:10px;
+    border:2px solid gray;
+    margin:10px;
+    background: #ffffcc;
+  }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+
+</head>
+<body>
+
+<div id="preamble">
+
+</div>
+
+<div id="content">
+<h1 class="title">spec</h1>
+
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 Scripts</a>
+<ul>
+<li><a href="#sec-1-1">1.1 Namespaces</a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2 Routing</a>
+<ul>
+<li><a href="#sec-2-1">2.1 Registering Routes</a></li>
+<li><a href="#sec-2-2">2.2 Other Registration Functions</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3 Templating</a>
+<ul>
+<li><a href="#sec-3-1">3.1 Rendering templates</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">4 Configuration</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Scripts</h2>
+<div class="outline-text-2" id="text-1">
+
+
+
+</div>
+
+<div id="outline-container-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Namespaces</h3>
+<div class="outline-text-3" id="text-1-1">
+
+
+<p>
+By convention, controller files are namespaced accordingly using dot
+notation.  Namespaces are structured as
+&lt;project&gt;.&lt;controller&gt;.&lt;action&gt; where &lt;project&gt; is the name of the
+project that this controller is a part of, &lt;controller&gt; is the type of
+controller this is, usually a type of object, and &lt;action&gt; is the name
+of the function.
+</p>
+
+
+
+<pre class="example">namespace('tutorial.users');
+
+tutorial.users.list = function (request) {
+    // List code goes here...
+}
+
+tutorial.users.show = function (request) {
+    // Show code goes here...
+}
+</pre>
+
+
+<p>
+The names in the namespace can be arbitrary, but you should choose
+discriptive names to help you in routing.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Routing</h2>
+<div class="outline-text-2" id="text-2">
+
+
+<p>
+Routes define javascript handlers for incoming requests.  Once a route
+is registered, requests matching that route will be forwarded to the
+registered function.  Keep in mind that the order in which a route is
+registered is important, as the first matched route will handle the
+incoming request.
+</p>
+
+</div>
+
+<div id="outline-container-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Registering Routes</h3>
+<div class="outline-text-3" id="text-2-1">
+
+
+<p>
+Routes are registered using the &lt;pre&gt;registeredRoute&lt;/pre&gt; function.
+</p>
+
+
+
+<pre class="example">// register_route(pattern, function);
+
+register_route('/users', tutorial.users.list);
+register_route('/user/:id', tutorial.users.show);
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Other Registration Functions</h3>
+<div class="outline-text-3" id="text-2-2">
+
+
+<p>
+Javascript resources and plugins can register other router functions
+to extend the capabilities of the router.
+</p>
+
+
+
+<pre class="example">// Example extentions
+
+register_oath_route('/admin', tutorial.admin.index, extra, params);
+register_basic_auth_route('/insecure', tutorial.insecure.index, domain, auth_function);
+</pre>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Templating</h2>
+<div class="outline-text-2" id="text-3">
+
+
+<p>
+The framework will use the <a href="https://github.com/janl/mustache.js">Mustache.js Framework</a> to render html (or
+other format) templates by convention.
+</p>
+
+</div>
+
+<div id="outline-container-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Rendering templates</h3>
+<div class="outline-text-3" id="text-3-1">
+
+
+<p>
+The Mustache renderer will be wrapped as it will not only need to
+format the content of the response, but it will also need to set the return code on
+the response.
+</p>
+<p>
+Templates can be rendered by the global function 'render<sub>template'</sub>
+which will find the appropriate view template and render it into the
+response object accordingly, returning the completed response object.
+</p>
+
+
+
+<pre class="example">require('model/user');
+
+tutorial.users.show = function (request) {
+    var response = new Response();
+    var user = tutorial.model.user.find_by_id(request.params.id);
+
+    return render_template(response, 'show_user.mustache', user);
+}
+
+</pre>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Configuration</h2>
+<div class="outline-text-2" id="text-4">
+
+</div>
+</div>
+</div>
+
+<div id="postamble">
+<p class="date">Date: 2012-06-22 16:07:25 CDT</p>
+<p class="author">Author: Ryan Harter</p>
+<p class="creator">Org version 7.8.11 with Emacs version 24</p>
+<a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
+
+</div>
+</body>
+</html>
