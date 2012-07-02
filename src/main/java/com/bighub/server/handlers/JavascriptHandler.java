@@ -76,7 +76,9 @@ public class JavascriptHandler extends AbstractHandler
 	    String req = "var request = " + convertRequestToJs(request) + ";";
 	    cx.evaluateString(scope, req, "req", 1, null);
 
-	    // Set up require
+            /**
+	     * Set up require
+             */
 	    File resourceDir = project.getResourceDir();
 	    Iterator<File> resources = FileUtils.iterateFiles(resourceDir, new String[]{ "js" }, true);
 	    List<URI> resourceUris = new ArrayList<URI>();
@@ -95,6 +97,13 @@ public class JavascriptHandler extends AbstractHandler
 	    
 	    ScriptableObject.putProperty(scope, "project", project);
 	    
+            /**
+             * Evaluate the bighub-core library
+             */
+            InputStream core = this.getClass().getResourceAsStream("/javascript/bighub-core.js");
+            InputStreamReader coreReader = new InputStreamReader(core);
+            cx.evaluateReader(scope, coreReader, "bighub-core.js", 1, null);
+
 	    FileInputStream fis = new FileInputStream(javascript);
 	    InputStreamReader reader = new InputStreamReader(fis);
 

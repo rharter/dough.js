@@ -2,6 +2,15 @@ package com.bighub.project;
 
 import java.io.File;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Collection;
+
+import org.apache.commons.io.FileUtils;
+
 /**
  * Encapsulates a bighub project so that consumers don't need to know where the resources
  * come from or how to get them.
@@ -54,5 +63,23 @@ public class Project {
 
     public String getResourcePath() {
 	return root.getAbsolutePath() + RESOURCE_PATH;
+    }
+
+    /**
+     * Returns a list of URLs of plugin jars.
+     */
+    public List<URL> getAllPluginUrls() {
+        List<URL> urls = new ArrayList<URL>();
+        Collection<File> files = FileUtils.listFiles(getPluginDir(), new String[] { ".jar" }, true);
+
+        for (File file : files) {
+            try {
+                urls.add(file.toURI().toURL());
+            } catch (MalformedURLException e) {
+                // Just don't include the file in the url list
+            }
+        }
+
+        return urls;
     }
 }
