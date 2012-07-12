@@ -49,6 +49,13 @@ bighub.global.init = function(root) {
     
 }
 
+bighub.global.start_server = function(port) {
+    if (bighub.server !== undefined) {
+        bighub.server.port = port;
+        bighub.server.start();
+    }
+}
+
 bighub.global.handle = function(java_target, java_base_request, java_request, java_response) {
     var request = {};
     request.method = java_request.getMethod() + "";
@@ -75,8 +82,8 @@ bighub.global.handle = function(java_target, java_base_request, java_request, ja
 
     out.println("Processing with " + handler.constructor);
     for (var f in handler) {
-    out.println("Processing with " + f);
-}
+        out.println("Processing with " + f);
+    }
 
     var ret = handler();
     if (ret !== undefined) {
@@ -92,4 +99,11 @@ bighub.global.handle = function(java_target, java_base_request, java_request, ja
     }
 }
 
-
+/**
+ * Environment changes
+ */
+Array.prototype.each = function (f) {
+    for (var i = 0; i < this.length; i++) {
+        f(this[i], i);
+    }
+};

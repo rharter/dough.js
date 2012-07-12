@@ -4,10 +4,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.FileUtils;
 
 import org.json.simple.JSONObject;
@@ -26,9 +22,6 @@ import org.mozilla.javascript.commonjs.module.RequireBuilder;
 import org.mozilla.javascript.commonjs.module.provider.ModuleSourceProvider;
 import org.mozilla.javascript.commonjs.module.provider.SoftCachingModuleScriptProvider;
 import org.mozilla.javascript.commonjs.module.provider.UrlModuleSourceProvider;
-
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 
 /**
  * Encapsulates a bighub project so that consumers don't need to know where the resources
@@ -56,9 +49,7 @@ public class Project {
 	/**
 	 *
 	 */
-	public void handle(String target, Request baseRequest,
-	                   HttpServletRequest request,
-	                   HttpServletResponse response) {
+	public void startServer(int port) {
 		if (context == null) {
 			init();
 		}
@@ -66,19 +57,16 @@ public class Project {
 		try {
 			Object bighub = scope.get("bighub", scope);
 			Object global = scope.get("global", (Scriptable)bighub);
-			Object handle = scope.get("handle", (Scriptable)global);
-			if (!(handle instanceof Function)) {
-				System.err.println("Failed to load bighub.global.handle(), got: " + handle.toString());
+			Object startServer = scope.get("start_server", (Scriptable)global);
+			if (!(startServer instanceof Function)) {
+				System.err.println("Failed to start server: Couldn't find method: start_server");
 				System.exit(1);
 			} else {
-				Object handleArgs[] = {
-					target,
-					baseRequest,
-					request,
-					response
+				Object serverArgs[] = {
+					port
 				};
-				Function f = (Function) handle;
-				f.call(context, scope, scope, handleArgs);
+				Function f = (Function) startServer;
+				f.call(context, scope, scope, serverArgs);
 			}
 		} catch (Exception e) {
 			System.err.println("Exception occurred: " + e.getMessage());
@@ -183,6 +171,13 @@ public class Project {
 			InputStream coreStream = this.getClass().getResourceAsStream("/javascript/bighub-core.js");
 			InputStreamReader coreReader = new InputStreamReader(coreStream);
 			context.evaluateReader(scope, coreReader, "bighub-core.js", 1, null);
+
+			/*
+			 * Evaluate the server
+			 */
+			InputStream serverStream = this.getClass().getResourceAsStream("/javascript/bighub-server.js");
+			InputStreamReader serverReader = new InputStreamReader(serverStream);
+			context.evaluateReader(scope, serverReader, "bighub-server.js", 1, null);
 
 			/*
 			 * Evaluate the config
