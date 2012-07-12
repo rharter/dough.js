@@ -14,7 +14,11 @@ bighub.global = this;
 var config = config || {};
 
 /**
- * Creates an object structure for the provided namespace path.
+ * Creates an object structure for the provided namespace path. 
+ *
+ * For example, <code>namespace("bighub.router")</code> will result in
+ * an object namespace of <code>bighub.router</code> so that you can
+ * add objects and methods like <code>bighub.router.register</code>.
  */
 bighub.global.namespace = function (path) {
     var parts = path.split('.');
@@ -28,3 +32,64 @@ bighub.global.namespace = function (path) {
         }
     }
 };
+
+/**
+ * Initializes a bighub project environment.
+ * 
+ * @param {string} path The root path of the bighub project.
+ */
+bighub.global.init = function(root) {
+    bighub.global.root = root;
+
+    // Read the configuration
+    bighub.config.init();
+
+    // Set up the routes
+    bighub.config.init();
+    
+}
+
+bighub.global.handle = function(java_target, java_base_request, java_request, java_response) {
+    var request = {};
+    request.method = java_request.getMethod() + "";
+    request.path_info = java_request.getPathInfo() + "";
+    request.uri = java_request.getRequestURI() + "";
+    request.url = java_request.getRequestURL() + "";
+    request.query_encoding = java_request.getQueryEncoding() + "";
+    request.query_string = java_request.getQueryString() + "";
+    request.scheme = java_request.getScheme() + "";
+    request.server_name = java_request.getServerName() + "";
+    request.server_port = java_request.getServerPort();
+    request.remote_addr = java_request.getRemoteAddr() + "";
+    request.remote_host = java_request.getRemoteHost() + "";
+    request.remote_port = java_request.getRemotePort();
+
+    out.println("Started " + request.method + " \"" + request.uri + "\" for " + request.remote_host + " at " + new Date());
+
+    var handler = bighub.router.resolve(request.uri);
+    
+    if (handler === undefined) {
+        out.println("\nNo route matches [" + request.method + "] \"" + request.uri + "\"");
+        return;
+    }
+
+    out.println("Processing with " + handler.constructor);
+    for (var f in handler) {
+    out.println("Processing with " + f);
+}
+
+    var ret = handler();
+    if (ret !== undefined) {
+        var outputStream = null;
+        try {
+            outputStream = java_response.getOutputStream();
+            outputStream.println(ret.toString());
+        } finally {
+            if (outputStream !== null) {
+                outputStream.close();
+            }
+        }
+    }
+}
+
+
