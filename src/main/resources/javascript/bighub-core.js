@@ -44,9 +44,6 @@ bighub.global.init = function(root) {
     // Read the configuration
     bighub.config.init();
 
-    // Set up the routes
-    bighub.config.init();
-    
 }
 
 bighub.global.start_server = function(port) {
@@ -70,6 +67,8 @@ bighub.global.handle = function(java_target, java_base_request, java_request, ja
     request.remote_addr = java_request.getRemoteAddr() + "";
     request.remote_host = java_request.getRemoteHost() + "";
     request.remote_port = java_request.getRemotePort();
+
+    bighub.global.log.debug('Started ' + request.method + ' \"' + request.uri + '\" for ' + request.remote_host + ' at ' + new Date());
 
     out.println("Started " + request.method + " \"" + request.uri + "\" for " + request.remote_host + " at " + new Date());
 

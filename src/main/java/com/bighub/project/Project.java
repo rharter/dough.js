@@ -137,12 +137,13 @@ public class Project {
 	 */
 	public List<URL> getAllPluginUrls() {
 		List<URL> urls = new ArrayList<URL>();
-		Collection<File> files = FileUtils.listFiles(getPluginDir(), new String[] { ".jar" }, true);
+		Collection<File> files = FileUtils.listFiles(getPluginDir(), new String[] { "jar" }, true);
 
 		for (File file : files) {
 			try {
 				urls.add(file.toURI().toURL());
 			} catch (MalformedURLException e) {
+				e.printStackTrace();
 				// Just don't include the file in the url list
 			}
 		}
@@ -154,6 +155,11 @@ public class Project {
 		ContextFactory cf = ContextFactory.getGlobal();
 		
 		if (cf.getApplicationClassLoader() == null) {
+			try {			
+				ClassLoader cl = getPluginClassLoader();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			cf.initApplicationClassLoader(getPluginClassLoader());
 		}
 
@@ -164,6 +170,7 @@ public class Project {
 			scope = itl;
 
 			ScriptableObject.putProperty(scope, "out", System.out);
+			ScriptableObject.putProperty(scope, "err", System.err);
 	    
 			/*
 			 * Evaluate the core
