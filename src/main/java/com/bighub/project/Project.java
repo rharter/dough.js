@@ -57,6 +57,21 @@ public class Project {
 		try {
 			Object bighub = scope.get("bighub", scope);
 			Object global = scope.get("global", (Scriptable)bighub);
+			
+			// Call init
+			Object init = scope.get("init", (Scriptable)global);
+			if (!(init instanceof Function)) {
+				System.err.println("Failed to start server: Couldn't find method: init");
+				System.exit(1);
+			} else {
+				Object initArgs[] = {
+					root.getAbsolutePath()
+				};
+				Function f = (Function) init;
+				f.call(context, scope, scope, initArgs);
+			}
+			
+			// Start the server
 			Object startServer = scope.get("start_server", (Scriptable)global);
 			if (!(startServer instanceof Function)) {
 				System.err.println("Failed to start server: Couldn't find method: start_server");

@@ -19,7 +19,11 @@ bighub.server.start = function() {
                                     Packages.java.net.SocketAddress);
 
     with (simpleServer) {
-        var container = new JavaAdapter(Container, bighub.server);
+		var handler_container = bighub.server.handler.handler_container;
+		handler_container.containers.push(bighub.server.handler.resource_handler);
+		handler_container.containers.push(bighub.server);
+		
+        var container = new JavaAdapter(Container, handler_container);
         var connection = new SocketConnection(container);
         var address = new InetSocketAddress(bighub.server.port);
 
@@ -51,6 +55,7 @@ bighub.server.handle = function(java_request, java_response) {
 
     out.println("Processing with " + handler);
 
+	bighub.global.response = java_response;
     var ret = handler();
     if (ret !== undefined) {
         var outputStream = null;
@@ -71,6 +76,71 @@ bighub.server.handle = function(java_request, java_response) {
             }
         }
     }
-
-    java_response.close();
 };
+
+/*
+ * Handlers are function that return true if they handled the request,
+ * otherwise they return false to pass the request downstream.
+ */
+namespace('bighub.server.handler.handler_container');
+bighub.server.handler.handler_container.containers = [];
+bighub.server.handler.handler_container.handle = function (java_request, java_response) {
+	var cons = bighub.server.handler.handler_container.containers;
+	var handled = false;
+	for (var i = 0; i < cons.length && !handled; i++) {
+		var con = cons[i];
+		handled = con.handle(java_request, java_response);
+	}
+}
+
+/**
+ * Resource Handler
+ */
+namespace('bighub.server.handler.resource_handler');
+
+bighub.server.handler.resource_handler.list_directories = false;
+
+
+bighub.server.handler.resource_handler.handle = function (java_request, java_response) {
+	var imports = JavaImporter(Packages.org.simpleframework.http.resource.FileContext);
+	
+	out.println("1");
+	with (imports) {
+		if (!bighub.server.handler.resource_handler.file_context) {
+			out.println("2");
+			var base = bighub.global.root + '/public';
+			bighub.server.handler.resource_handler.file_context = new FileContext(new File(base));
+		}
+		
+		out.println("3");
+		var file_context = bighub.server.handler.resource_handler.file_context;
+		var file = file_context.getFile(java_request.getTarget());
+		
+		out.println("4");
+		if (file === null) {
+			return false;
+		}
+		
+		out.println("5");
+		if (file.isDirectory()) {
+			if (bighub.server.handler.resource_handler.list_directories) {
+				
+			} else {
+				return false;
+			}
+		}
+		
+		java_response.setContentType(file_context.getContentType(java_request.getTarget()));
+		
+		var is = new FileInputStream(file);
+		var output = java_response.getOutputStream();
+		var next = is.read();
+		while (next !== -1) {
+			output.write(next);
+			next = is.read();
+		}
+		output.close();
+		
+		return true;
+	}
+}

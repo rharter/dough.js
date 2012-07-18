@@ -41,15 +41,16 @@ bighub.global.namespace = function (path) {
 bighub.global.init = function(root) {
     bighub.global.root = root;
 
-    // Read the configuration
-    bighub.config.init();
-
 }
 
 bighub.global.start_server = function(port) {
     if (bighub.server !== undefined) {
-        bighub.server.port = port;
-        bighub.server.start();
+		try {
+        	bighub.server.port = port;
+        	bighub.server.start();
+		} catch (e) {
+			out.println(e);
+		}
     }
 }
 
