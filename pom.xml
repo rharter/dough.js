@@ -1,23 +1,23 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" 
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  
+	  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+ 
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.bighub</groupId>
   <artifactId>server</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>BigHub Server</name>
-  
+ 
   <properties>
-    <simpleVersion>4.1.21</simpleVersion>
+    <jettyVersion>7.2.0.v20101020</jettyVersion>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>org.simpleframework</groupId>
-      <artifactId>simple</artifactId>
-      <version>${simpleVersion}</version>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>${jettyVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.mozilla</groupId>
@@ -34,34 +34,35 @@
       <artifactId>commons-io</artifactId>
       <version>1.3.2</version>
     </dependency>
-    <dependency> 
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-jdk14</artifactId>
-      <version>1.6.6</version>
-    </dependency>
   </dependencies>
   
   <build>
     <plugins>
       <plugin>
-	    <artifactId>maven-shade-plugin</artifactId>
-	    <version>1.4</version>
-	    <executions>
-	      <execution>
-	        <phase>package</phase>
-	        <goals>
-	          <goal>shade</goal>
-	        </goals>
-	        <configuration>
-	          <createDependencyReducedPom>true</createDependencyReducedPom>
-	          <transformers>
-		        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-		          <mainClass>com.bighub.server.Main</mainClass>
-		        </transformer>
-	          </transformers>
-	        </configuration>
-	      </execution>
-	    </executions>
+	<artifactId>maven-shade-plugin</artifactId>
+	<version>1.4</version>
+	<executions>
+	  <execution>
+	    <phase>package</phase>
+	    <goals>
+	      <goal>shade</goal>
+	    </goals>
+	    <configuration>
+	      <createDependencyReducedPom>true</createDependencyReducedPom>
+	      <transformers>
+		<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+		  <mainClass>com.bighub.server.Main</mainClass>
+		</transformer>
+	      </transformers>
+	    </configuration>
+	  </execution>
+	</executions>
+      </plugin>
+      <plugin>
+        <!-- This plugin is needed for the servlet example -->
+        <groupId>org.mortbay.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>${jettyVersion}</version>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

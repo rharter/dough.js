@@ -6,38 +6,56 @@ namespace('bighub.server');
 bighub.server.port = 8080;
 
 bighub.server.start = function() {
-    out.println("=> Starting Simple server on http://0.0.0.0:" +
-                bighub.server.port);
-    out.println("=> Ctrl-C to shutdown server");
-                
-    var simpleServer = JavaImporter(Packages.org.simpleframework.http.core.Container,
-                                    Packages.org.simpleframework.transport.connect.Connection,
-                                    Packages.org.simpleframework.transport.connect.SocketConnection,
-                                    Packages.org.simpleframework.http.Response,
-                                    Packages.org.simpleframework.http.Request,
-                                    Packages.java.net.InetSocketAddress,
-                                    Packages.java.net.SocketAddress);
+    var jetty = JavaImporter(Packages.org.eclipse.jetty.embedded,
+                             Packages.org.eclipse.jetty.server,
+                             Packages.org.eclipse.jetty.server.handler,
+                             Packages.org.eclipse.jetty.server.nio,
+                             Packages.org.eclipse.jetty.util.thread);
 
-    with (simpleServer) {
-        var container = new JavaAdapter(Container, bighub.server);
-        var connection = new SocketConnection(container);
-        var address = new InetSocketAddress(bighub.server.port);
-
-        connection.connect(address);
+    with (jetty) {
+		var server = bighub.server.server = new Server();
+		server.setStopAtShutdown(true);
+		
+		// Increase the thread pool
+		var threadPool = new QueuedThreadPool();
+		threadPool.setMaxThreads(100);
+		server.setThreadPool(threadPool);
+		
+		// Ensure using the non-blocking connector
+		var connector = new SelectChannelConnector();
+		connector.setPort(bighub.server.port);
+		connector.setMaxIdleTime(30000);
+		server.setConnectors([connector]);
+		
+		// Add the handlers
+		var handlers = new HandlerList();
+		
+		var publicHandler = new ResourceHandler();
+		publicHandler.setResourceBase(bighub.global.root + '/public/');
+		handlers.addHandler(publicHandler);
+		
+		handlers.addHandler(new JavaAdapter(AbstractHandler, bighub.server));
+		
+		server.setHandler(handlers);
+		
+		server.start();
+		server.join();
     }
 };
 
-bighub.server.handle = function(java_request, java_response) {
-    var request = {};
+bighub.server.handle = function(java_target, java_base_request, java_request, java_response) {
+    bighub.global.request = {};
     request.method = java_request.getMethod() + "";
-    request.target = java_request.getTarget() + "";
-    request.query = java_request.getQuery() + "";
-    request.path = java_request.getPath() + "";
+    request.target = java_target + "";
+    request.query = java_request.getQueryString() + "";
+    request.path = java_request.getPathInfo() + "";
     request.client_address = {
-        port: java_request.getClientAddress().getPort(),
-        host: java_request.getClientAddress().getHostName(),
-        address: java_request.getClientAddress().getAddress().getHostAddress()
+        port: java_request.getRemotePort(),
+        host: java_request.getRemoteHost(),
+        address: java_request.getRemoteAddr()
     };
+
+	bighub.global.response = java_response;
 
     out.println("Started " + request.method + " \"" + request.target + "\" for " + request.client_address.address + " at " + new Date());
 
@@ -45,7 +63,6 @@ bighub.server.handle = function(java_request, java_response) {
     
     if (handler === undefined) {
         out.println("\nNo route matches [" + request.method + "] \"" + request.target + "\"\n");
-        java_response.close();
         return;
     }
 
@@ -55,14 +72,8 @@ bighub.server.handle = function(java_request, java_response) {
     if (ret !== undefined) {
         var outputStream = null;
         try {
-            var now = new Date();
-            java_response.set("Content-Type", "text/html");
-            java_response.set("Server", "BigHub-fs/1.0 (Simple 4.1)");
-            java_response.setDate("Date", now.getTime());
-            java_response.setDate("Last-Modified", now.getTime());
-
-            outputStream = java_response.getPrintStream();
-            outputStream.println(ret.toString());
+            outputStream = java_response.getOutputStream();
+            outputStream.print(ret.toString());
         } catch (e) {
             out.println("Error: " + e.toString());
         } finally {
@@ -71,6 +82,4 @@ bighub.server.handle = function(java_request, java_response) {
             }
         }
     }
-
-    java_response.close();
 };
