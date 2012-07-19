@@ -28,12 +28,12 @@ Until generation scripts are created, you are required to make your project stru
 
     - Root
       + app
-		    + controllers
-		    + views
-		  + config
-		  + lib
-		    + resources
-		    + vendor
+        + controllers
+        + views
+      + config
+      + lib
+        + resources
+        + vendor
 
 ## app/controllers
 
