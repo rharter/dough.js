@@ -44,7 +44,7 @@ bighub.server.start = function() {
 };
 
 bighub.server.handle = function(java_target, java_base_request, java_request, java_response) {
-    bighub.global.request = {};
+    var request = {};
     request.method = java_request.getMethod() + "";
     request.target = java_target + "";
     request.query = java_request.getQueryString() + "";
@@ -55,20 +55,33 @@ bighub.server.handle = function(java_target, java_base_request, java_request, ja
         address: java_request.getRemoteAddr()
     };
 
-	bighub.global.response = java_response;
+	// Take care of the parameters
+	request.params = {};
+	var names = java_request.getParameterMap().keySet().toArray().slice();
+	for each(var n in names) {
+		var v = java_request.getParameterValues(n);
+		if (v.length === 1) {
+			request.params[n] = v[0] + "";
+		} else {
+			request.params[n] = v.slice().map(function (el) { return el + '' });
+		}
+	}
 
     out.println("Started " + request.method + " \"" + request.target + "\" for " + request.client_address.address + " at " + new Date());
 
-    var handler = bighub.router.resolve(request.target, request.method);;
+    var route = bighub.router.resolve(request.target, request.method);;
     
-    if (handler === undefined) {
+    if (route === undefined) {
         out.println("\nNo route matches [" + request.method + "] \"" + request.target + "\"\n");
         return;
     }
 
-    out.println("Processing with " + handler);
+    out.println("Processing with " + JSON.stringify(route));
 
-    var ret = handler();
+	for (var p in route.params) {
+		request.params[p] = route.params[p];
+	}
+	var ret = route.handler(request, java_response);
     if (ret !== undefined) {
         var outputStream = null;
         try {

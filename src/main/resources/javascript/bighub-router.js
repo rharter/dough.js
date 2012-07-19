@@ -68,8 +68,7 @@ bighub.router.resolve = function (path, method) {
             }
 
             if (match) {
-                bighub.global.params = params;
-                return route.handler;
+				return {handler: route.handler, params: params};
             }
         }
     }
