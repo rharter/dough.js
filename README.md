@@ -1,63 +1,62 @@
-# File based BigHub Concept
+# Dough.js
 
-This project is a proof of concept for a BigHub server entirely based on file system based projects (so no database necessary) and using an embedded server.
+Dough.js is a web application framework that allows you to create full featured web applications using the `model-view-controller` paradigm.  Using Javascript on the JVM, Dough.js allows you to easily port existing Java libraries and drivers to the javascript environment in the form of plugins.
 
-* Static Resources
-  * Static resources live in the public directory of the project and will be served first.
-  * File names are based on path relative to public directory (i.e. /public/index.html will be resolved for /index.html, etc)
-* Javascript Resources
-  * Javascript files will be executed and the results passed to the client allowing for dynamic content.
-  * File names are based on path relative to app directory (i.e. /app/hello.js will be resolved for /hello.js, etc)
-* Plugins
-  * Plugins allow extensibility by including jar files in the javascript environment.
-  * All jar files in the /lib/plugins directory will be loaded into the javascript scope and can be accessed in standard ways.
-* Resources
-  * Resources are javascript files that will not be exposed directly to clients.
-  * They can be included in javascript resources.
-  * They enable the use and sharing of libraries of generic, reusable code.
+Using a plugin architecture allows you to choose which features of Dough.js you will use, including SQL and NoSQL backing stores, multiple rendering engines, and more.  If there isn't a plugin readily available, feel free to make your own.
 
-# Project Directory Structure
+# Getting Started
 
-<pre>
-- ROOT
-  +- app
-    +- Javascript files in the directory structure of your choosing (will be reflected in URLs)
-  +- public
-    +- Static files to be served directly to the client
-  +- lib
-    +- plugins
-    +- resources
-  +- config
-    +- config.js
-</pre>
+To get started, download the [project template](https://github.com/rharter/template-dough.js) to see a working app.
 
-# File Types
+You can build the server application using the following command from the root of the project.
 
-## Plugins
+    mvn clean package
 
-Plugins are jar files that will be loaded at boot time and can be utilized from the javascripts. You can include any standard jar files in here and access them from javascript as you would any other class.
+This will output a jar file in the `target` directory named `server-[version].jar`.
 
-### Connectors
+To execute the server and run a web application, use the following command.
 
-Connectors are a special type of plugin that defines a connector to an external system. These can connect to things like databases, web service providers, or file shares. Often times connectors will use plugins to bridge the gap from the java world and will serve as a convenient, thin, javascript wrapper.
+    java -jar /path/to/server-[version].jar --base /path/to/project
 
-## Resources
+To learn more about options available to the server, use the `--help` parameter.
 
-Resources are javascript files that don't get served to web clients, but can be included in other scripts. They are used to implement libraries. They return an object that can be utilized in other scripts for various purposes.
+    java -jar /path/to/server-[version].jar --help
 
-Resources are implemented to follow the [CommonJS 1.1 Spec](http://wiki.commonjs.org/wiki/Modules/1.1). They are simply javascript files that live in lib/resources and can be included in other resources.
+# The Project
 
-lib/resources/mylib.js
+Until generation scripts are created, you are required to make your project structure by hand.
 
-	// Export a variable                                                                                
-	exports.PI = 3.14;
-	
-	// export a function                                                                                
-	exports.print = function(value) {
-	    return 'print: ' + value;
-	}
+    - Root
+      + app
+		    + controllers
+		    + views
+		  + config
+		  + lib
+		    + resources
+		    + vendor
 
-app/anything.js
+## app/controllers
 
-	var mylibrary = require('my-library');
-	return mylibrary.print(mylibrary.PI);
+Your web application controllers live in the `app/controllers` directory.  Controllers are Javascript files that generally contain all of the request handler functions pertaining to a given section of your app.
+
+## app/views
+
+The standard templating language for Dough.js is [Mustache](http://mustache.github.com/).  Mustache template files live in subdirectories inside the `app/views` directory.  The names of the subdirectories are arbitrary, but should correlate to the controller names for organizational purposes.  For instance, all templates related to a `user.js` controller should live in `app/views/users/`.
+
+## config
+
+The `config` directory is not currently heavily used, but will be in the near future.  Currently, your `routes.js` file lives here.
+
+## lib/resources
+
+The `lib/resources` directory is where you'll put all of your custom Javascript helper files, along with any jar files that you want included in your project. Custom helper files should live directly in this folder, and any custom plugins (usually Javascript and jar files) will go in subdirectories named for the plugin.
+
+## lib/vendor
+
+This is where third party plugins reside.  Third party distributable plugins have a specific structure like so:
+
+    - plugin_name
+      + jars
+      + resources
+
+The root directory is named after the plugin is contains for ease of identification.  The `jars` directory contains any required jar files, and the `resources` directory is for the Javascript files that the plugin will access.
