@@ -30,11 +30,12 @@ import org.mozilla.javascript.commonjs.module.provider.UrlModuleSourceProvider;
 public class Project {
     
 	private static final String PUBLIC_PATH = File.separator + "public";
-	private static final String APP_PATH = File.separator + "app";
+	private static final String APP_PATH = File.separator + "app/controllers";
 	private static final String CONFIG_PATH = File.separator + "config";
 	private static final String LIB_PATH = File.separator + "lib" + File.separator;
 	private static final String PLUGIN_PATH = LIB_PATH + "plugins";
 	private static final String RESOURCE_PATH = LIB_PATH + "resources";
+	private static final String VENDOR_PATH = LIB_PATH + "vendor";
     
 	private File root;
 
@@ -57,21 +58,18 @@ public class Project {
 		try {
 			Object bighub = scope.get("bighub", scope);
 			Object global = scope.get("global", (Scriptable)bighub);
-			
-			// Call init
 			Object init = scope.get("init", (Scriptable)global);
 			if (!(init instanceof Function)) {
-				System.err.println("Failed to start server: Couldn't find method: init");
+				System.err.println("Failed to start server: Couldn't find method: start_server");
 				System.exit(1);
 			} else {
-				Object initArgs[] = {
-					root.getAbsolutePath()
+				Object serverArgs[] = {
+					root
 				};
 				Function f = (Function) init;
-				f.call(context, scope, scope, initArgs);
+				f.call(context, scope, scope, serverArgs);
 			}
 			
-			// Start the server
 			Object startServer = scope.get("start_server", (Scriptable)global);
 			if (!(startServer instanceof Function)) {
 				System.err.println("Failed to start server: Couldn't find method: start_server");
@@ -141,6 +139,14 @@ public class Project {
 	public String getResourcePath() {
 		return root.getAbsolutePath() + RESOURCE_PATH;
 	}
+	
+	public String getVendorPath() {
+		return root.getAbsolutePath() + VENDOR_PATH;
+	}
+	
+	public File getVendorDir() {
+		return new File(getVendorPath());
+	}
 
 	public ClassLoader getPluginClassLoader() {
 		List<URL> plugins = getAllPluginUrls();
@@ -153,6 +159,7 @@ public class Project {
 	public List<URL> getAllPluginUrls() {
 		List<URL> urls = new ArrayList<URL>();
 		Collection<File> files = FileUtils.listFiles(getPluginDir(), new String[] { "jar" }, true);
+		files.addAll(FileUtils.listFiles(getVendorDir(), new String[] { "jar" }, true));
 
 		for (File file : files) {
 			try {
@@ -219,6 +226,11 @@ public class Project {
 			 * Evaluate the resources
 			 */
 			evaluate(context, scope, getResourceDir(), true);
+			
+			/*
+			 * Evaluate the vendor resources
+			 */
+			evaluate(context, scope, getVendorDir(), true);
 
 			/*
 			 * Evaluate the controllers

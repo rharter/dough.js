@@ -6,68 +6,88 @@ namespace('bighub.server');
 bighub.server.port = 8080;
 
 bighub.server.start = function() {
-    out.println("=> Starting Simple server on http://0.0.0.0:" +
-                bighub.server.port);
-    out.println("=> Ctrl-C to shutdown server");
-                
-    var simpleServer = JavaImporter(Packages.org.simpleframework.http.core.Container,
-                                    Packages.org.simpleframework.transport.connect.Connection,
-                                    Packages.org.simpleframework.transport.connect.SocketConnection,
-                                    Packages.org.simpleframework.http.Response,
-                                    Packages.org.simpleframework.http.Request,
-                                    Packages.java.net.InetSocketAddress,
-                                    Packages.java.net.SocketAddress);
+    var jetty = JavaImporter(Packages.org.eclipse.jetty.embedded,
+                             Packages.org.eclipse.jetty.server,
+                             Packages.org.eclipse.jetty.server.handler,
+                             Packages.org.eclipse.jetty.server.nio,
+                             Packages.org.eclipse.jetty.util.thread);
 
-    with (simpleServer) {
-		var handler_container = bighub.server.handler.handler_container;
-		handler_container.containers.push(bighub.server.handler.resource_handler);
-		handler_container.containers.push(bighub.server);
+    with (jetty) {
+		var server = bighub.server.server = new Server();
+		server.setStopAtShutdown(true);
 		
-        var container = new JavaAdapter(Container, handler_container);
-        var connection = new SocketConnection(container);
-        var address = new InetSocketAddress(bighub.server.port);
-
-        connection.connect(address);
+		// Increase the thread pool
+		var threadPool = new QueuedThreadPool();
+		threadPool.setMaxThreads(100);
+		server.setThreadPool(threadPool);
+		
+		// Ensure using the non-blocking connector
+		var connector = new SelectChannelConnector();
+		connector.setPort(bighub.server.port);
+		connector.setMaxIdleTime(30000);
+		server.setConnectors([connector]);
+		
+		// Add the handlers
+		var handlers = new HandlerList();
+		
+		var publicHandler = new ResourceHandler();
+		publicHandler.setResourceBase(bighub.global.root + '/public/');
+		handlers.addHandler(publicHandler);
+		
+		handlers.addHandler(new JavaAdapter(AbstractHandler, bighub.server));
+		
+		server.setHandler(handlers);
+		
+		server.start();
+		server.join();
     }
 };
 
-bighub.server.handle = function(java_request, java_response) {
+bighub.server.handle = function(java_target, java_base_request, java_request, java_response) {
     var request = {};
     request.method = java_request.getMethod() + "";
-    request.target = java_request.getTarget() + "";
-    request.query = java_request.getQuery() + "";
-    request.path = java_request.getPath() + "";
+    request.target = java_target + "";
+    request.query = java_request.getQueryString() + "";
+    request.path = java_request.getPathInfo() + "";
     request.client_address = {
-        port: java_request.getClientAddress().getPort(),
-        host: java_request.getClientAddress().getHostName(),
-        address: java_request.getClientAddress().getAddress().getHostAddress()
+        port: java_request.getRemotePort(),
+        host: java_request.getRemoteHost(),
+        address: java_request.getRemoteAddr()
     };
+
+	// Take care of the parameters
+	request.params = {};
+	var names = java_request.getParameterMap().keySet().toArray().slice();
+	for each(var n in names) {
+		var v = java_request.getParameterValues(n);
+		if (v.length === 1) {
+			request.params[n] = v[0] + "";
+		} else {
+			request.params[n] = v.slice().map(function (el) { return el + '' });
+		}
+	}
 
     out.println("Started " + request.method + " \"" + request.target + "\" for " + request.client_address.address + " at " + new Date());
 
-    var handler = bighub.router.resolve(request.target, request.method);;
+    var route = bighub.router.resolve(request.target, request.method);;
     
-    if (handler === undefined) {
+    if (route === undefined) {
         out.println("\nNo route matches [" + request.method + "] \"" + request.target + "\"\n");
-        java_response.close();
         return;
     }
 
-    out.println("Processing with " + handler);
+    out.println("Processing with " + JSON.stringify(route));
 
-	bighub.global.response = java_response;
-    var ret = handler();
+	for (var p in route.params) {
+		request.params[p] = route.params[p];
+	}
+	var ret = route.handler(request, java_response);
+
     if (ret !== undefined) {
         var outputStream = null;
         try {
-            var now = new Date();
-            java_response.set("Content-Type", "text/html");
-            java_response.set("Server", "BigHub-fs/1.0 (Simple 4.1)");
-            java_response.setDate("Date", now.getTime());
-            java_response.setDate("Last-Modified", now.getTime());
-
-            outputStream = java_response.getPrintStream();
-            outputStream.println(ret.toString());
+            outputStream = java_response.getOutputStream();
+            outputStream.print(ret.toString());
         } catch (e) {
             out.println("Error: " + e.toString());
         } finally {
