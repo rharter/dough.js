@@ -3,11 +3,11 @@
 	  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
  
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.bighub</groupId>
+  <groupId>com.doughjs</groupId>
   <artifactId>server</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>BigHub Server</name>
+  <name>Dough.js Server</name>
  
   <properties>
     <jettyVersion>7.2.0.v20101020</jettyVersion>
@@ -51,7 +51,7 @@
 	      <createDependencyReducedPom>true</createDependencyReducedPom>
 	      <transformers>
 		<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-		  <mainClass>com.bighub.server.Main</mainClass>
+		  <mainClass>com.doughjs.server.Main</mainClass>
 		</transformer>
 	      </transformers>
 	    </configuration>
@@ -72,7 +72,7 @@
           <execution><goals><goal>java</goal></goals></execution>
         </executions>
         <configuration>
-          <mainClass>com.bighub.server.Main</mainClass>
+          <mainClass>com.doughjs.server.Main</mainClass>
         </configuration>
       </plugin>
     </plugins>

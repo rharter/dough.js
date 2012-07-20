@@ -1,0 +1,1 @@
+namespace('dough.config');

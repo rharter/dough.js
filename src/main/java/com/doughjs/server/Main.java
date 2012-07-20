@@ -1,9 +1,9 @@
-package com.bighub.server;
+package com.doughjs.server;
 
 import java.io.*;
 import java.util.Properties;
 
-import com.bighub.project.Project;
+import com.doughjs.project.Project;
 
 public class Main
 {

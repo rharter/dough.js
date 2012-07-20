@@ -1,4 +1,4 @@
-package com.bighub.project;
+package com.doughjs.project;
 
 import java.io.*;
 import java.net.*;
@@ -24,7 +24,7 @@ import org.mozilla.javascript.commonjs.module.provider.SoftCachingModuleScriptPr
 import org.mozilla.javascript.commonjs.module.provider.UrlModuleSourceProvider;
 
 /**
- * Encapsulates a bighub project so that consumers don't need to know where the resources
+ * Encapsulates a doughjs project so that consumers don't need to know where the resources
  * come from or how to get them.
  */
 public class Project {
@@ -56,8 +56,8 @@ public class Project {
 		}
 
 		try {
-			Object bighub = scope.get("bighub", scope);
-			Object global = scope.get("global", (Scriptable)bighub);
+			Object dough = scope.get("dough", scope);
+			Object global = scope.get("global", (Scriptable)dough);
 			Object init = scope.get("init", (Scriptable)global);
 			if (!(init instanceof Function)) {
 				System.err.println("Failed to start server: Couldn't find method: start_server");
@@ -197,30 +197,30 @@ public class Project {
 			/*
 			 * Evaluate the core
 			 */
-			InputStream coreStream = this.getClass().getResourceAsStream("/javascript/bighub-core.js");
+			InputStream coreStream = this.getClass().getResourceAsStream("/javascript/dough-core.js");
 			InputStreamReader coreReader = new InputStreamReader(coreStream);
-			context.evaluateReader(scope, coreReader, "bighub-core.js", 1, null);
+			context.evaluateReader(scope, coreReader, "dough-core.js", 1, null);
 
 			/*
 			 * Evaluate the server
 			 */
-			InputStream serverStream = this.getClass().getResourceAsStream("/javascript/bighub-server.js");
+			InputStream serverStream = this.getClass().getResourceAsStream("/javascript/dough-server.js");
 			InputStreamReader serverReader = new InputStreamReader(serverStream);
-			context.evaluateReader(scope, serverReader, "bighub-server.js", 1, null);
+			context.evaluateReader(scope, serverReader, "dough-server.js", 1, null);
 
 			/*
 			 * Evaluate the config
 			 */
-			InputStream configStream = this.getClass().getResourceAsStream("/javascript/bighub-config.js");
+			InputStream configStream = this.getClass().getResourceAsStream("/javascript/dough-config.js");
 			InputStreamReader configReader = new InputStreamReader(configStream);
-			context.evaluateReader(scope, configReader, "bighub-config.js", 1, null);
+			context.evaluateReader(scope, configReader, "dough-config.js", 1, null);
 
 			/*
 			 * Evaluate the router
 			 */
-			InputStream routerStream = this.getClass().getResourceAsStream("/javascript/bighub-router.js");
+			InputStream routerStream = this.getClass().getResourceAsStream("/javascript/dough-router.js");
 			InputStreamReader routerReader = new InputStreamReader(routerStream);
-			context.evaluateReader(scope, routerReader, "bighub-router.js", 1, null);
+			context.evaluateReader(scope, routerReader, "dough-router.js", 1, null);
 
 			/*
 			 * Evaluate the resources

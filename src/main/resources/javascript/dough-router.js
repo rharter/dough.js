@@ -1,11 +1,11 @@
 // Header comments to go here
 
-namespace('bighub.router');
+namespace('dough.router');
 
 /** 
  * Hash containing the registered routes
  */
-bighub.router.routes = bighub.router.routes || [];
+dough.router.routes = dough.router.routes || [];
 
 /**
  * Registers a route to handle web requests.
@@ -16,12 +16,12 @@ bighub.router.routes = bighub.router.routes || [];
  * @param {[string]} methods An array of method strings to matches, or 
  *     null to match all methods.
  */
-bighub.router.register = function (pattern, handler, methods) {
+dough.router.register = function (pattern, handler, methods) {
     var route = {};
     route.pattern = pattern;
     route.methods = methods;
     route.handler = handler;
-    bighub.router.routes.push(route);
+    dough.router.routes.push(route);
 }
 
 /** 
@@ -29,10 +29,10 @@ bighub.router.register = function (pattern, handler, methods) {
  *
  * If route.methods is null, then any matching path will be returned.
  */
-bighub.router.resolve = function (path, method) {
+dough.router.resolve = function (path, method) {
     var path_tokens = get_tokens(path);
 
-    var routes = bighub.router.routes;
+    var routes = dough.router.routes;
     for (var i = 0; i < routes.length; i++) {
         var route = routes[i];
 

@@ -1,12 +1,12 @@
 // Header comments need to be filled in here
 
 // Define the root bighub object
-var bighub = bighub || {};
+var dough = dough || {};
 
 /*
  * Keep a reference to the global context
  */
-bighub.global = this;
+dough.global = this;
 
 /**
  * Stores the global system config, to be loaded from a file.
@@ -20,9 +20,9 @@ var config = config || {};
  * an object namespace of <code>bighub.router</code> so that you can
  * add objects and methods like <code>bighub.router.register</code>.
  */
-bighub.global.namespace = function (path) {
+dough.global.namespace = function (path) {
     var parts = path.split('.');
-    var cur = bighub.global;
+    var cur = dough.global;
 
     for (var part; parts.length && (part = parts.shift());) {
         if (cur[part]) {
@@ -38,15 +38,15 @@ bighub.global.namespace = function (path) {
  * 
  * @param {string} path The root path of the bighub project.
  */
-bighub.global.init = function(root) {
-    bighub.global.root = root;
+dough.global.init = function(root) {
+    dough.global.root = root;
 }
 
-bighub.global.start_server = function(port) {
-    if (bighub.server !== undefined) {
+dough.global.start_server = function(port) {
+    if (dough.server !== undefined) {
 		try {
-        	bighub.server.port = port;
-        	bighub.server.start();
+        	dough.server.port = port;
+        	dough.server.start();
 		} catch (e) {
 			out.println(e);
 		}

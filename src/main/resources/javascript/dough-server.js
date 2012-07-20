@@ -1,11 +1,11 @@
-namespace('bighub.server');
+namespace('dough.server');
 
 /*
  * Set the default values
  */
-bighub.server.port = 8080;
+dough.server.port = 8080;
 
-bighub.server.start = function() {
+dough.server.start = function() {
     var jetty = JavaImporter(Packages.org.eclipse.jetty.embedded,
                              Packages.org.eclipse.jetty.server,
                              Packages.org.eclipse.jetty.server.handler,
@@ -13,7 +13,7 @@ bighub.server.start = function() {
                              Packages.org.eclipse.jetty.util.thread);
 
     with (jetty) {
-		var server = bighub.server.server = new Server();
+		var server = dough.server.server = new Server();
 		server.setStopAtShutdown(true);
 		
 		// Increase the thread pool
@@ -23,7 +23,7 @@ bighub.server.start = function() {
 		
 		// Ensure using the non-blocking connector
 		var connector = new SelectChannelConnector();
-		connector.setPort(bighub.server.port);
+		connector.setPort(dough.server.port);
 		connector.setMaxIdleTime(30000);
 		server.setConnectors([connector]);
 		
@@ -31,10 +31,10 @@ bighub.server.start = function() {
 		var handlers = new HandlerList();
 		
 		var publicHandler = new ResourceHandler();
-		publicHandler.setResourceBase(bighub.global.root + '/public/');
+		publicHandler.setResourceBase(dough.global.root + '/public/');
 		handlers.addHandler(publicHandler);
 		
-		handlers.addHandler(new JavaAdapter(AbstractHandler, bighub.server));
+		handlers.addHandler(new JavaAdapter(AbstractHandler, dough.server));
 		
 		server.setHandler(handlers);
 		
@@ -43,7 +43,7 @@ bighub.server.start = function() {
     }
 };
 
-bighub.server.handle = function(java_target, java_base_request, java_request, java_response) {
+dough.server.handle = function(java_target, java_base_request, java_request, java_response) {
     var request = {};
     request.method = java_request.getMethod() + "";
     request.target = java_target + "";
@@ -69,7 +69,7 @@ bighub.server.handle = function(java_target, java_base_request, java_request, ja
 
     out.println("Started " + request.method + " \"" + request.target + "\" for " + request.client_address.address + " at " + new Date());
 
-    var route = bighub.router.resolve(request.target, request.method);;
+    var route = dough.router.resolve(request.target, request.method);;
     
     if (route === undefined) {
         out.println("\nNo route matches [" + request.method + "] \"" + request.target + "\"\n");
@@ -96,71 +96,4 @@ bighub.server.handle = function(java_target, java_base_request, java_request, ja
             }
         }
     }
-};
-
-/*
- * Handlers are function that return true if they handled the request,
- * otherwise they return false to pass the request downstream.
- */
-namespace('bighub.server.handler.handler_container');
-bighub.server.handler.handler_container.containers = [];
-bighub.server.handler.handler_container.handle = function (java_request, java_response) {
-	var cons = bighub.server.handler.handler_container.containers;
-	var handled = false;
-	for (var i = 0; i < cons.length && !handled; i++) {
-		var con = cons[i];
-		handled = con.handle(java_request, java_response);
-	}
-}
-
-/**
- * Resource Handler
- */
-namespace('bighub.server.handler.resource_handler');
-
-bighub.server.handler.resource_handler.list_directories = false;
-
-
-bighub.server.handler.resource_handler.handle = function (java_request, java_response) {
-	var imports = JavaImporter(Packages.org.simpleframework.http.resource.FileContext);
-	
-	out.println("1");
-	with (imports) {
-		if (!bighub.server.handler.resource_handler.file_context) {
-			out.println("2");
-			var base = bighub.global.root + '/public';
-			bighub.server.handler.resource_handler.file_context = new FileContext(new File(base));
-		}
-		
-		out.println("3");
-		var file_context = bighub.server.handler.resource_handler.file_context;
-		var file = file_context.getFile(java_request.getTarget());
-		
-		out.println("4");
-		if (file === null) {
-			return false;
-		}
-		
-		out.println("5");
-		if (file.isDirectory()) {
-			if (bighub.server.handler.resource_handler.list_directories) {
-				
-			} else {
-				return false;
-			}
-		}
-		
-		java_response.setContentType(file_context.getContentType(java_request.getTarget()));
-		
-		var is = new FileInputStream(file);
-		var output = java_response.getOutputStream();
-		var next = is.read();
-		while (next !== -1) {
-			output.write(next);
-			next = is.read();
-		}
-		output.close();
-		
-		return true;
-	}
 }
