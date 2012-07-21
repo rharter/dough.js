@@ -32,10 +32,10 @@ public class Project {
 	private static final String PUBLIC_PATH = File.separator + "public";
 	private static final String APP_PATH = File.separator + "app/controllers";
 	private static final String CONFIG_PATH = File.separator + "config";
-	private static final String LIB_PATH = File.separator + "lib" + File.separator;
-	private static final String PLUGIN_PATH = LIB_PATH + "plugins";
-	private static final String RESOURCE_PATH = LIB_PATH + "resources";
-	private static final String VENDOR_PATH = LIB_PATH + "vendor";
+	private static final String LIB_PATH = File.separator + "lib";
+	private static final String PLUGIN_PATH = LIB_PATH + File.separator + "plugins";
+	private static final String RESOURCE_PATH = LIB_PATH + File.separator + "resources";
+	private static final String VENDOR_PATH = LIB_PATH + File.separator + "vendor";
     
 	private File root;
 
@@ -123,6 +123,14 @@ public class Project {
 	public String getAppPath() {
 		return root.getAbsolutePath() + APP_PATH;
 	}
+	
+	public File getLibraryDir() {
+		return new File(getLibraryPath());
+	}
+	
+	public String getLibraryPath() {
+		return root.getAbsolutePath() + LIB_PATH;
+	}
     
 	public File getPluginDir() {
 		return new File(getPluginPath());
@@ -158,7 +166,7 @@ public class Project {
 	 */
 	public List<URL> getAllPluginUrls() {
 		List<URL> urls = new ArrayList<URL>();
-		Collection<File> files = FileUtils.listFiles(getPluginDir(), new String[] { "jar" }, true);
+		Collection<File> files = FileUtils.listFiles(getLibraryDir(), new String[] { "jar" }, true);
 		files.addAll(FileUtils.listFiles(getVendorDir(), new String[] { "jar" }, true));
 
 		for (File file : files) {
@@ -225,12 +233,7 @@ public class Project {
 			/*
 			 * Evaluate the resources
 			 */
-			evaluate(context, scope, getResourceDir(), true);
-			
-			/*
-			 * Evaluate the vendor resources
-			 */
-			evaluate(context, scope, getVendorDir(), true);
+			evaluate(context, scope, getLibraryDir(), true);
 
 			/*
 			 * Evaluate the controllers

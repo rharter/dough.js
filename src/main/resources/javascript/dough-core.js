@@ -1,6 +1,6 @@
 // Header comments need to be filled in here
 
-// Define the root bighub object
+// Define the root dough object
 var dough = dough || {};
 
 /*
@@ -16,9 +16,9 @@ var config = config || {};
 /**
  * Creates an object structure for the provided namespace path. 
  *
- * For example, <code>namespace("bighub.router")</code> will result in
- * an object namespace of <code>bighub.router</code> so that you can
- * add objects and methods like <code>bighub.router.register</code>.
+ * For example, <code>namespace("dough.router")</code> will result in
+ * an object namespace of <code>dough.router</code> so that you can
+ * add objects and methods like <code>dough.router.register</code>.
  */
 dough.global.namespace = function (path) {
     var parts = path.split('.');
@@ -34,9 +34,9 @@ dough.global.namespace = function (path) {
 };
 
 /**
- * Initializes a bighub project environment.
+ * Initializes a dough project environment.
  * 
- * @param {string} path The root path of the bighub project.
+ * @param {string} path The root path of the dough project.
  */
 dough.global.init = function(root) {
     dough.global.root = root;
