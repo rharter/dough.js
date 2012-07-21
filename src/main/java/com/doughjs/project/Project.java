@@ -241,6 +241,21 @@ public class Project {
 			 * Evaluate the config files
 			 */
 			evaluate(context, scope, getConfigDir(), true);
+
+			/*
+			 * Run the plugin initializers
+			 */
+			Object dough = scope.get("dough", scope);
+			Object global = scope.get("global", (Scriptable)dough);
+			Object init = scope.get("executeInitializers", (Scriptable)global);
+
+			if (!(init instanceof Function)) {
+				System.err.println("Failed to start server: Couldn't find method: executeInitializers");
+				System.exit(1);
+			} else {
+				Function f = (Function) init;
+				f.call(context, scope, scope, new Object[]{});
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
