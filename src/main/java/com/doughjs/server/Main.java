@@ -8,12 +8,41 @@ import com.doughjs.project.Project;
 public class Main
 {
 	private final int port;
-	private final String secret;
 	private final Project project;
+
+	private static Properties loadProperties(String projPath) {
+		String envName = System.getenv("DOUGH_ENV");
+
+		if (envName == null) {
+			envName = "development";
+		}
+
+		File projBaseDir = new File(projPath);
+		File configDir = new File(projBaseDir, "config/environments/" + envName);
+		Properties props = new Properties();
+		String configFilenames[] = configDir.list();
+
+		if (configFilenames != null) {
+			for (String filename : configFilenames) {
+				if (filename.endsWith(".properties")) {
+					try {
+						FileReader fr = new FileReader(new File(configDir, filename));
+						props.load(fr);
+						fr.close();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+
+		return props;
+	}
 
 	public static void main(String... args) throws Exception
 	{
-		Properties props = new Properties();
+		String port = null;
+		String baseDir = null;
 
 		// Process the arguments
 		for (int i = 0; i < args.length; i++) {
@@ -24,11 +53,24 @@ public class Main
 			}
 
 			if ("-p".equals(arg) || "--port".equals(arg)) {
-				props.put("port", args[++i]);
+				port = args[++i];
 			} else if ("-b".equals(arg) || "--base".equals(arg)) {
-				props.put("baseDir", args[++i]);
+				baseDir = args[++i];
 			}
 		}
+
+		//always force this to either command line arg or this default
+		if (baseDir == null) {
+			baseDir = ".";
+		}
+
+		Properties props = loadProperties(baseDir);
+
+		if (port != null) {
+			props.setProperty("port", port);
+		}
+		
+		props.setProperty("baseDir", baseDir);
 
 		Main srv = new Main(props);
 		srv.start();
@@ -36,10 +78,7 @@ public class Main
 
 	public Main(Properties props) {
 		this.port = Integer.parseInt(props.getProperty("port", "8080"));
-		this.secret = props.getProperty("secret", "eb27fb2e61ed603363461b3b4e37e0a0");
-
-		String baseDir = props.getProperty("baseDir", ".");
-		this.project = new Project(baseDir);
+		this.project = new Project(props);
 	}
 
 	private static void printUsage() {
