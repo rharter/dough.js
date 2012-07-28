@@ -6,6 +6,8 @@ import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 
+import org.eclipse.wst.jsdt.debug.rhino.debugger.*;
+
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 
@@ -37,15 +39,18 @@ public class Project {
 	private static final String RESOURCE_PATH = LIB_PATH + File.separator + "resources";
 	private static final String VENDOR_PATH = LIB_PATH + File.separator + "vendor";
     
+	private final Properties properties;
+
 	private File root;
 
 	private Context context;
 	private Scriptable scope;
     
-	public Project(File file) {
-		root = file;
-		init();
-	}
+    // I'm commenting it out because it seems to act differently than the other constructor
+	// public Project(File file) {
+	// 	root = file;
+	// 	init();
+	// }
 
 	/**
 	 *
@@ -96,8 +101,9 @@ public class Project {
 		}
 	}
 
-	public Project(String path) {
-		root = new File(path);
+	public Project(Properties props) {
+		properties = props;
+		root = new File(properties.getProperty("baseDir"));
 	}
     
 	public File getPublicDir() {
@@ -191,6 +197,20 @@ public class Project {
 				e.printStackTrace();
 			}
 			cf.initApplicationClassLoader(getPluginClassLoader());
+		}
+
+		String rhinoPort = properties.getProperty("rhino.debug.port");
+
+		if(rhinoPort != null) {
+			String rhinoCfg = "transport=socket,suspend=" + properties.getProperty("rhino.debug.suspend", "n") + ",address=" + rhinoPort;
+			RhinoDebugger debugger = new RhinoDebugger(rhinoCfg);
+
+			try {
+				debugger.start();
+				cf.addListener(debugger);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 
 		context = cf.enterContext();
