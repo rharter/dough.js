@@ -6,6 +6,8 @@ import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 
+import org.eclipse.wst.jsdt.debug.rhino.debugger.*;
+
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 
@@ -195,6 +197,20 @@ public class Project {
 				e.printStackTrace();
 			}
 			cf.initApplicationClassLoader(getPluginClassLoader());
+		}
+
+		String rhinoPort = properties.getProperty("rhino.debug.port");
+
+		if(rhinoPort != null) {
+			String rhinoCfg = "transport=socket,suspend=" + properties.getProperty("rhino.debug.suspend", "n") + ",address=" + rhinoPort;
+			RhinoDebugger debugger = new RhinoDebugger(rhinoCfg);
+
+			try {
+				debugger.start();
+				cf.addListener(debugger);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 
 		context = cf.enterContext();
