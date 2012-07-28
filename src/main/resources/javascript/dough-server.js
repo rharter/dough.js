@@ -4,6 +4,7 @@ namespace('dough.server');
  * Set the default values
  */
 dough.server.port = 8080;
+dough.server.sessionHandler = null;
 
 dough.server.start = function() {
     var jetty = JavaImporter(Packages.org.eclipse.jetty.embedded,
@@ -44,27 +45,11 @@ dough.server.start = function() {
 };
 
 dough.server.handle = function(java_target, java_base_request, java_request, java_response) {
-    var request = {};
-    request.method = java_request.getMethod() + "";
-    request.target = java_target + "";
-    request.query = java_request.getQueryString() + "";
-    request.path = java_request.getPathInfo() + "";
-    request.client_address = {
-        port: java_request.getRemotePort(),
-        host: java_request.getRemoteHost(),
-        address: java_request.getRemoteAddr()
-    };
+    var request = new dough.server._Request(java_request);
 
-	// Take care of the parameters
-	request.params = {};
-	var names = java_request.getParameterMap().keySet().toArray().slice();
-	for each(var n in names) {
-		var v = java_request.getParameterValues(n);
-		if (v.length === 1) {
-			request.params[n] = v[0] + "";
-		} else {
-			request.params[n] = v.slice().map(function (el) { return el + '' });
-		}
+	if (dough.server.sessionHandler) {
+		request.session = dough.server.sessionHandler
+				.getSession(java_request.getSession(true).getId());
 	}
 
     out.println("Started " + request.method + " \"" + request.target + "\" for " + request.client_address.address + " at " + new Date());
@@ -96,4 +81,40 @@ dough.server.handle = function(java_target, java_base_request, java_request, jav
             }
         }
     }
+}
+
+dough.server._Request = function (request) {
+	this._request = request;
+
+	this.method = java_request.getMethod() + "";
+	this.target = java_target + "";
+	this.query = java_request.getQueryString() + "";
+	this.path = java_request.getPathInfo() + "";
+	this.client_address = {
+	    port: java_request.getRemotePort(),
+	    host: java_request.getRemoteHost(),
+	    address: java_request.getRemoteAddr()
+	};
+	
+	this.params = {};
+	var names = request.getParameterMap().keySet().toArray().slice();
+	for each(var n in names) {
+		var v = request.getParameterValues(n);
+		if (v.length === 1) {
+			this.request.params[n] = v[0] + "";
+		} else {
+			this.request.params[n] = v.slice().map(function (el) { return el + '' });
+		}
+	}
+}
+
+dough.server._Request.prototype = {
+	this._request: null,
+	this.method: null,
+	this.target: null,
+	this.query: null,
+	this.path: null,
+	this.client_address: null,
+	this.params: null,
+	this.session: null
 }
