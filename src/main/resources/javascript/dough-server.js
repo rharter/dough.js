@@ -11,6 +11,7 @@ dough.server.start = function() {
                              Packages.org.eclipse.jetty.server,
                              Packages.org.eclipse.jetty.server.handler,
                              Packages.org.eclipse.jetty.server.nio,
+							 Packages.org.eclipse.jetty.server.session,
                              Packages.org.eclipse.jetty.util.thread);
 
     with (jetty) {
@@ -31,6 +32,8 @@ dough.server.start = function() {
 		// Add the handlers
 		var handlers = new HandlerList();
 		
+		handlers.addHandler(new SessionHandler());
+		
 		var publicHandler = new ResourceHandler();
 		publicHandler.setResourceBase(dough.global.root + '/public/');
 		handlers.addHandler(publicHandler);
@@ -46,13 +49,14 @@ dough.server.start = function() {
 
 dough.server.handle = function(java_target, java_base_request, java_request, java_response) {
     var request = new dough.server._Request(java_request);
+	request.target = java_target + '';
 
 	if (dough.server.sessionHandler) {
 		request.session = dough.server.sessionHandler
-				.getSession(java_request.getSession(true).getId());
+				.getSession(request._request.getSession(true).getId());
 	}
 
-    out.println("Started " + request.method + " \"" + request.target + "\" for " + request.client_address.address + " at " + new Date());
+    out.println("Started " + request.method + " \"" + request.target + "\" for " + request.client_address.address + " at " + new Date() + "\n");
 
     var route = dough.router.resolve(request.target, request.method);;
     
@@ -60,12 +64,15 @@ dough.server.handle = function(java_target, java_base_request, java_request, jav
         out.println("\nNo route matches [" + request.method + "] \"" + request.target + "\"\n");
         return;
     }
-
-    out.println("Processing with " + JSON.stringify(route));
-
-	for (var p in route.params) {
-		request.params[p] = route.params[p];
+	
+	// If this is a protected route and there isn't a user, redirect
+	if (route.auth_redirect && request.session && !request.session.val('user_id')) {
+		java_response.sendRedirect(route.auth_redirect + '?forward_url=' + request.target);
 	}
+
+    out.println("Processing with " + JSON.stringify(route.pattern));
+
+	request.params = route.evaluateParams(request);
 	var ret = route.handler(request, java_response);
 
     if (ret !== undefined) {
@@ -86,14 +93,13 @@ dough.server.handle = function(java_target, java_base_request, java_request, jav
 dough.server._Request = function (request) {
 	this._request = request;
 
-	this.method = java_request.getMethod() + "";
-	this.target = java_target + "";
-	this.query = java_request.getQueryString() + "";
-	this.path = java_request.getPathInfo() + "";
+	this.method = request.getMethod() + "";
+	this.query = request.getQueryString() + "";
+	this.path = request.getPathInfo() + "";
 	this.client_address = {
-	    port: java_request.getRemotePort(),
-	    host: java_request.getRemoteHost(),
-	    address: java_request.getRemoteAddr()
+	    port: request.getRemotePort(),
+	    host: request.getRemoteHost(),
+	    address: request.getRemoteAddr()
 	};
 	
 	this.params = {};
@@ -101,20 +107,9 @@ dough.server._Request = function (request) {
 	for each(var n in names) {
 		var v = request.getParameterValues(n);
 		if (v.length === 1) {
-			this.request.params[n] = v[0] + "";
+			this.params[n] = v[0] + "";
 		} else {
-			this.request.params[n] = v.slice().map(function (el) { return el + '' });
+			this.params[n] = v.slice().map(function (el) { return el + '' });
 		}
 	}
-}
-
-dough.server._Request.prototype = {
-	this._request: null,
-	this.method: null,
-	this.target: null,
-	this.query: null,
-	this.path: null,
-	this.client_address: null,
-	this.params: null,
-	this.session: null
 }
