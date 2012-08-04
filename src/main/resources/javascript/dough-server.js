@@ -72,7 +72,7 @@ dough.server.handle = function(java_target, java_base_request, java_request, jav
 
     out.println("Processing with " + JSON.stringify(route.pattern));
 
-	request.params = route.evaluateParams(request);
+	request = route.evaluateParams(request);
 	var ret = route.handler(request, java_response);
 
     if (ret !== undefined) {
