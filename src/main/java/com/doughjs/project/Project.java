@@ -5,6 +5,7 @@ import java.net.*;
 import java.util.*;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.*;
 
 import org.eclipse.wst.jsdt.debug.rhino.debugger.*;
 
@@ -264,7 +265,18 @@ public class Project {
 			/*
 			 * Evaluate the config files
 			 */
-			evaluate(context, scope, getConfigDir(), true);
+			evaluate(context, scope, getConfigDir(), new NotFileFilter(new NameFileFilter("environments")));
+
+			/*
+			 * Also pull in the configs for the current environment
+			 */
+			String envName = System.getenv("DOUGH_ENV");
+
+			if (envName == null) {
+				envName = "development";
+			}
+
+			evaluate(context, scope, new File(getConfigDir(), "environments/" + envName), true);
 
 			/*
 			 * Run the plugin initializers
@@ -289,12 +301,19 @@ public class Project {
 	 * Evaluates javascript files in a directory
 	 */
 	private void evaluate(Context cx, Scriptable scope, File file, boolean recursive) {
+		this.evaluate(cx, scope, file, recursive ? TrueFileFilter.INSTANCE : null);
+	}
+
+	/**
+	 * Evaluates javascript files in a directory
+	 */
+	private void evaluate(Context cx, Scriptable scope, File file, IOFileFilter dirFilter) {
 		try {
 			if (!file.isDirectory()) {
 				FileReader reader = new FileReader(file);
 				cx.evaluateReader(scope, reader, file.getName(), 1, null);
 			} else {
-				Iterator<File> files = FileUtils.iterateFiles(file, new String[]{"js"}, recursive);
+				Iterator<File> files = FileUtils.iterateFiles(file, new SuffixFileFilter(".js"), dirFilter);
 				while (files.hasNext()) {
 					File f = files.next();
 					FileReader reader = new FileReader(f);

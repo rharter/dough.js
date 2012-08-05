@@ -1,7 +1,10 @@
 package com.doughjs.server;
 
 import java.io.*;
-import java.util.Properties;
+import java.util.*;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.*;
 
 import com.doughjs.project.Project;
 
@@ -18,23 +21,13 @@ public class Main
 		}
 
 		File projBaseDir = new File(projPath);
-		File configDir = new File(projBaseDir, "config/environments/" + envName);
+		File configDir = new File(projBaseDir, "config");
 		Properties props = new Properties();
-		String configFilenames[] = configDir.list();
+		
+		loadPropertyFiles(props, configDir, new NotFileFilter(new NameFileFilter("environments")));
+		loadPropertyFiles(props, new File(configDir, "environments/" + envName), TrueFileFilter.INSTANCE);
 
-		if (configFilenames != null) {
-			for (String filename : configFilenames) {
-				if (filename.endsWith(".properties")) {
-					try {
-						FileReader fr = new FileReader(new File(configDir, filename));
-						props.load(fr);
-						fr.close();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
+		System.out.println("props: " + props);
 
 		return props;
 	}
@@ -104,5 +97,30 @@ public class Main
 
 	private void loadPlugins() {
 	
+	}
+
+	/**
+	 * Loads property files in a directory
+	 */
+	private static void loadPropertyFiles(Properties props, File file, IOFileFilter dirFilter) {
+		try {
+			if (!file.isDirectory()) {
+				FileReader reader = new FileReader(file);
+				props.load(reader);
+				reader.close();
+			} else {
+				Iterator<File> files = FileUtils.iterateFiles(file, new SuffixFileFilter(".properties"), dirFilter);
+				while (files.hasNext()) {
+					File f = files.next();
+					FileReader reader = new FileReader(f);
+					props.load(reader);
+					reader.close();
+				}
+			}
+		} catch (FileNotFoundException fnf) {
+			fnf.printStackTrace();
+		} catch (IOException io) {
+			io.printStackTrace();
+		}
 	}
 }
