@@ -220,6 +220,13 @@ public class Project {
 			ImporterTopLevel itl = new ImporterTopLevel(context);
 			scope = itl;
 
+			// Add the environment
+			String envName = System.getenv("DOUGH_ENV");
+			if (envName == null) {
+				envName = "development";
+			}
+			ScriptableObject.putProperty(scope, "env", envName);
+
 			ScriptableObject.putProperty(scope, "out", System.out);
 			ScriptableObject.putProperty(scope, "err", System.err);
 	    
@@ -269,12 +276,6 @@ public class Project {
 			/*
 			 * Also pull in the configs for the current environment
 			 */
-			String envName = System.getenv("DOUGH_ENV");
-
-			if (envName == null) {
-				envName = "development";
-			}
-
 			evaluate(context, scope, new File(getConfigDir(), "environments/" + envName), true);
 
 			/*

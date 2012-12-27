@@ -102,7 +102,7 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-			<id>central</id>
+			<id>forgerock</id>
 			<name>repo</name>
 			<url>http://maven.forgerock.org/repo/repo</url>
 		</repository>
