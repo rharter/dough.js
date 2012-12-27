@@ -209,6 +209,7 @@ public class Project {
 			try {
 				debugger.start();
 				cf.addListener(debugger);
+				System.out.println("Debugging enabled. Listening on port: " + rhinoPort);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

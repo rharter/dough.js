@@ -60,3 +60,7 @@ This is where third party plugins reside.  Third party distributable plugins hav
       + resources
 
 The root directory is named after the plugin is contains for ease of identification.  The `jars` directory contains any required jar files, and the `resources` directory is for the Javascript files that the plugin will access.
+
+# License
+
+Dough.js is released under the [MIT License](http://www.opensource.org/licenses/MIT).
