@@ -31,9 +31,13 @@ Until generation scripts are created, you are required to make your project stru
         + controllers
         + views
       + config
+        + environments
+          + development
+          + production
       + lib
         + resources
         + vendor
+      + public
 
 ## app/controllers
 
@@ -45,7 +49,7 @@ The standard templating language for Dough.js is [Mustache](http://mustache.gith
 
 ## config
 
-The `config` directory is not currently heavily used, but will be in the near future.  Currently, your `routes.js` file lives here.
+The `config` directory is where configuration for Dough.js and your plugins will go. The `environments` directory contains folders named for each environment (set with the `DOUGH_ENV` environment variable) and allows you to have different configurations for different environments.  This enables things like database connection info and debug settings to be selected based on environment without having to change code.
 
 ## lib/resources
 
@@ -60,6 +64,10 @@ This is where third party plugins reside.  Third party distributable plugins hav
       + resources
 
 The root directory is named after the plugin is contains for ease of identification.  The `jars` directory contains any required jar files, and the `resources` directory is for the Javascript files that the plugin will access.
+
+## public
+
+This is where all static resources are served from.  Static resources, like client side javascript, css, images, and static html files, take precedence over any other resources. So if you have a file named `index.html` in the root of the public directory, it will be served regardless of other routes.
 
 # License
 
