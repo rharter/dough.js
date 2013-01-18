@@ -98,6 +98,7 @@ public class Project {
 	 */
 	public void close() {
 		if (context != null) {
+			context.unseal(this);
 			context.exit();
 		}
 	}
@@ -293,6 +294,12 @@ public class Project {
 				Function f = (Function) init;
 				f.call(context, scope, scope, new Object[]{});
 			}
+
+			/*
+			 * Seal the context for security
+			 */
+			context.seal(this);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
